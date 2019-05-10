@@ -1,0 +1,241 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Project:</h2>
+C:\Users\LEAPLINE_JR\Desktop\USART\STM32.uvproj
+Project File Date:  05/04/2011
+
+<h2>Output:</h2>
+Build target 'Target 1'
+assembling startup_stm32f10x_hd.s...
+compiling main.c...
+user\main.c(16): error:  #5: cannot open source input file "lcd.h": No such file or directory
+user\main.c:   #include "lcd.h"      //////////////
+user\main.c:                                       ^
+user\main.c: user\main.c: 0 warnings, 1 error
+compiling stm32f10x_it.c...
+user\stm32f10x_it.c(151): warning:  #223-D: function "EXTI_GetITStatus" declared implicitly
+user\stm32f10x_it.c:      if(EXTI_GetITStatus(EXTI_Line6) != RESET)
+user\stm32f10x_it.c:         ^
+user\stm32f10x_it.c(151): error:  #20: identifier "EXTI_Line6" is undefined
+user\stm32f10x_it.c:      if(EXTI_GetITStatus(EXTI_Line6) != RESET)
+user\stm32f10x_it.c:                          ^
+user\stm32f10x_it.c(154): warning:  #223-D: function "EXTI_ClearITPendingBit" declared implicitly
+user\stm32f10x_it.c:              EXTI_ClearITPendingBit(EXTI_Line6);
+user\stm32f10x_it.c:              ^
+user\stm32f10x_it.c: user\stm32f10x_it.c: 2 warnings, 1 error
+compiling misc.c...
+compiling stm32f10x_rcc.c...
+compiling stm32f10x_gpio.c...
+compiling stm32f10x_usart.c...
+compiling core_cm3.c...
+compiling system_stm32f10x.c...
+Target not created
+Build target 'Target 1'
+compiling main.c...
+compiling stm32f10x_it.c...
+user\stm32f10x_it.c(151): warning:  #223-D: function "EXTI_GetITStatus" declared implicitly
+user\stm32f10x_it.c:      if(EXTI_GetITStatus(EXTI_Line6) != RESET)
+user\stm32f10x_it.c:         ^
+user\stm32f10x_it.c(151): error:  #20: identifier "EXTI_Line6" is undefined
+user\stm32f10x_it.c:      if(EXTI_GetITStatus(EXTI_Line6) != RESET)
+user\stm32f10x_it.c:                          ^
+user\stm32f10x_it.c(154): warning:  #223-D: function "EXTI_ClearITPendingBit" declared implicitly
+user\stm32f10x_it.c:              EXTI_ClearITPendingBit(EXTI_Line6);
+user\stm32f10x_it.c:              ^
+user\stm32f10x_it.c: user\stm32f10x_it.c: 2 warnings, 1 error
+Target not created
+Build target 'Target 1'
+compiling main.c...
+user\main.c(42): warning:  #223-D: function "USART_Configuration" declared implicitly
+user\main.c:     USART_Configuration();
+user\main.c:     ^
+user\main.c: user\main.c: 1 warning, 0 errors
+compiling stm32f10x_it.c...
+linking...
+.\Obj\STM32.axf: Error: L6218E: Undefined symbol USART_Configuration (referred from main.o).
+.\Obj\STM32.axf: Not enough information to list image symbols.
+.\Obj\STM32.axf: Finished: 1 information, 0 warning and 1 error messages.
+Target not created
+Build target 'Target 1'
+compiling main.c...
+user\main.c(42): warning:  #223-D: function "USART_Configuration" declared implicitly
+user\main.c:     USART_Configuration();
+user\main.c:     ^
+user\main.c: user\main.c: 1 warning, 0 errors
+compiling stm32f10x_it.c...
+compiling usart.c...
+user\usart\usart.c(12): error:  #20: identifier "USART_InitTypeDef" is undefined
+user\usart\usart.c:     USART_InitTypeDef USART_InitStructure;
+user\usart\usart.c:     ^
+user\usart\usart.c(30): error:  #20: identifier "USART_WordLength_8b" is undefined
+user\usart\usart.c:     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
+user\usart\usart.c:                                            ^
+user\usart\usart.c(31): error:  #20: identifier "USART_StopBits_1" is undefined
+user\usart\usart.c:     USART_InitStructure.USART_StopBits = USART_StopBits_1;
+user\usart\usart.c:                                          ^
+user\usart\usart.c(32): error:  #20: identifier "USART_Parity_No" is undefined
+user\usart\usart.c:     USART_InitStructure.USART_Parity = USART_Parity_No;
+user\usart\usart.c:                                        ^
+user\usart\usart.c(33): error:  #20: identifier "USART_HardwareFlowControl_None" is undefined
+user\usart\usart.c:     USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
+user\usart\usart.c:                                                     ^
+user\usart\usart.c(34): error:  #20: identifier "USART_Mode_Rx" is undefined
+user\usart\usart.c:     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+user\usart\usart.c:                                      ^
+user\usart\usart.c(34): error:  #20: identifier "USART_Mode_Tx" is undefined
+user\usart\usart.c:     USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+user\usart\usart.c:                                                      ^
+user\usart\usart.c(35): warning:  #223-D: function "USART_Init" declared implicitly
+user\usart\usart.c:     USART_Init(USART1, &USART_InitStructure);
+user\usart\usart.c:     ^
+user\usart\usart.c(37): warning:  #223-D: function "USART_Cmd" declared implicitly
+user\usart\usart.c:     USART_Cmd(USART1, ENABLE);
+user\usart\usart.c:     ^
+user\usart\usart.c(39): warning:  #223-D: function "USART_ClearFlag" declared implicitly
+user\usart\usart.c:     USART_ClearFlag(USART1, USART_FLAG_TC);
+user\usart\usart.c:     ^
+user\usart\usart.c(39): error:  #20: identifier "USART_FLAG_TC" is undefined
+user\usart\usart.c:     USART_ClearFlag(USART1, USART_FLAG_TC);
+user\usart\usart.c:                             ^
+user\usart\usart.c(49): warning:  #223-D: function "USART_SendData" declared implicitly
+user\usart\usart.c:     USART_SendData(USART1, (uint8_t) ch);
+user\usart\usart.c:     ^
+user\usart\usart.c(52): warning:  #223-D: function "USART_GetFlagStatus" declared implicitly
+user\usart\usart.c:     while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)
+user\usart\usart.c:            ^
+user\usart\usart.c(52): error:  #20: identifier "USART_FLAG_TC" is undefined
+user\usart\usart.c:     while (USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET)
+user\usart\usart.c:                                        ^
+user\usart\usart.c(64): warning:  #223-D: function "USART_GetFlagStatus" declared implicitly
+user\usart\usart.c:     while (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == RESET)
+user\usart\usart.c:            ^
+user\usart\usart.c(64): error:  #20: identifier "USART_FLAG_RXNE" is undefined
+user\usart\usart.c:     while (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == RESET)
+user\usart\usart.c:                                        ^
+user\usart\usart.c(67): warning:  #223-D: function "USART_ReceiveData" declared implicitly
+user\usart\usart.c:     return (int)USART_ReceiveData(USART1);
+user\usart\usart.c:                 ^
+user\usart\usart.c: user\usart\usart.c: 7 warnings, 10 errors
+compiling misc.c...
+compiling stm32f10x_rcc.c...
+compiling stm32f10x_gpio.c...
+compiling stm32f10x_usart.c...
+compiling core_cm3.c...
+compiling system_stm32f10x.c...
+Target not created
+Build target 'Target 1'
+compiling usart.c...
+linking...
+Program Size: Code=3680 RO-data=336 RW-data=24 ZI-data=608  
+".\Obj\STM32.axf" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling main.c...
+user\main.c(42): warning:  #223-D: function "USART_Configuration" declared implicitly
+user\main.c:     USART_Configuration();
+user\main.c:     ^
+user\main.c(44): warning:  #223-D: function "printf" declared implicitly
+user\main.c:     printf("*********************************************\r\n");
+user\main.c:     ^
+user\main.c: user\main.c: 2 warnings, 0 errors
+linking...
+Program Size: Code=6050 RO-data=350 RW-data=36 ZI-data=852  
+".\Obj\STM32.axf" - 0 Error(s), 2 Warning(s).
+Build target 'Target 1'
+compiling main.c...
+user\main.c(42): warning:  #223-D: function "USART_Configuration" declared implicitly
+user\main.c:     USART_Configuration();
+user\main.c:     ^
+user\main.c: user\main.c: 1 warning, 0 errors
+linking...
+Program Size: Code=6050 RO-data=350 RW-data=36 ZI-data=852  
+".\Obj\STM32.axf" - 0 Error(s), 1 Warning(s).
+Build target 'Target 1'
+compiling main.c...
+linking...
+Program Size: Code=6050 RO-data=350 RW-data=36 ZI-data=852  
+".\Obj\STM32.axf" - 0 Error(s), 0 Warning(s).
+Load "C:\\Users\\LEAPLINE_JR\\Desktop\\USART\\Obj\\STM32.AXF" 
+Erase Done.
+Programming Done.
+Verify OK.
+Application running ...
+Build target 'Target 1'
+compiling stm32f10x_it.c...
+linking...
+Program Size: Code=6050 RO-data=350 RW-data=36 ZI-data=852  
+".\Obj\STM32.axf" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+linking...
+Program Size: Code=6050 RO-data=350 RW-data=36 ZI-data=852  
+".\Obj\STM32.axf" - 0 Error(s), 0 Warning(s).
+Load "C:\\Users\\LEAPLINE_JR\\Desktop\\USART\\Obj\\STM32.AXF" 
+Erase Done.
+Programming Done.
+Verify OK.
+Application running ...
+Build target 'Target 1'
+compiling main.c...
+linking...
+Program Size: Code=6058 RO-data=350 RW-data=32 ZI-data=848  
+".\Obj\STM32.axf" - 0 Error(s), 0 Warning(s).
+Load "C:\\Users\\LEAPLINE_JR\\Desktop\\USART\\Obj\\STM32.AXF" 
+Erase Done.
+Programming Done.
+Verify OK.
+Application running ...
+Build target 'Target 1'
+compiling main.c...
+linking...
+Program Size: Code=2592 RO-data=336 RW-data=20 ZI-data=612  
+".\Obj\STM32.axf" - 0 Error(s), 0 Warning(s).
+Load "C:\\Users\\LEAPLINE_JR\\Desktop\\USART\\Obj\\STM32.AXF" 
+Erase Done.
+Programming Done.
+Verify OK.
+Application running ...
+Build target 'Target 1'
+compiling main.c...
+linking...
+Program Size: Code=3688 RO-data=336 RW-data=20 ZI-data=612  
+".\Obj\STM32.axf" - 0 Error(s), 0 Warning(s).
+Load "C:\\Users\\LEAPLINE_JR\\Desktop\\USART\\Obj\\STM32.AXF" 
+Erase Done.
+Programming Done.
+Verify OK.
+Application running ...
+Load "C:\\Users\\LEAPLINE_JR\\Desktop\\USART\\Obj\\STM32.AXF" 
+Erase Done.
+Programming Done.
+Verify OK.
+Application running ...
+Build target 'Target 1'
+compiling main.c...
+linking...
+Program Size: Code=6054 RO-data=350 RW-data=32 ZI-data=848  
+".\Obj\STM32.axf" - 0 Error(s), 0 Warning(s).
+Load "C:\\Users\\LEAPLINE_JR\\Desktop\\USART\\Obj\\STM32.AXF" 
+Erase Done.
+Programming Done.
+Verify OK.
+Application running ...
+Build target 'Target 1'
+linking...
+Program Size: Code=6054 RO-data=350 RW-data=32 ZI-data=848  
+".\Obj\STM32.axf" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling main.c...
+linking...
+Program Size: Code=6058 RO-data=350 RW-data=32 ZI-data=848  
+".\Obj\STM32.axf" - 0 Error(s), 0 Warning(s).
+Build target 'Target 1'
+compiling main.c...
+linking...
+Program Size: Code=6054 RO-data=350 RW-data=32 ZI-data=848  
+".\Obj\STM32.axf" - 0 Error(s), 0 Warning(s).
+Load "C:\\Users\\LEAPLINE_JR\\Desktop\\USART\\Obj\\STM32.AXF" 
+Erase Done.
+Programming Done.
+Verify OK.
+Application running ...
