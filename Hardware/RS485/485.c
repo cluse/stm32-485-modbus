@@ -3,6 +3,8 @@
 #include "pbdata.h"
 #include "misc.h"
 
+#include "modbus_crc.h"
+
 
 //-------------------------------------------------
 //static USART_TypeDef *master_uart;
@@ -174,6 +176,33 @@ static u8 get_len_from_buf(struct MODBUS_BUF *lp)
 	return lp->buf[2];
 }
 
+static void buf_calc_crc(u8 *buf,u8 len)
+{
+	u16 crc;
+	crc = crc16tablefast(buf,len&0xff);
+	buf[len] = ((crc>>8)&0xff);
+	buf[len+1] = (crc&0xff);
+}
+
+static bool is_buf_crc_right(struct MODBUS_BUF *lp)
+{
+	u16 crc;
+	u8 *buf;
+	u8 len,crc_h,crc_l;
+	buf = lp->buf;
+	len = lp->len - 2;
+	crc = crc16tablefast(buf,len&0xff);
+	crc_h = ((crc>>8)&0xff);
+	crc_l = (crc&0xff);
+	if (crc_h != buf[len]) {
+		return false;
+	}
+	if (crc_l != buf[len+1]) {
+		return false;
+	}
+	return true;
+}
+
 static bool is_frame_vaild(struct MODBUS_BUF *lp)
 {
 	u8 len;
@@ -185,7 +214,7 @@ static bool is_frame_vaild(struct MODBUS_BUF *lp)
 		lp->len < len + MODBUS_APPEND_LEN) {
 		return false;
 	}
-	return true;
+	return is_buf_crc_right(lp);
 }
 
 static void Master_Idle_Detect(void)
@@ -334,15 +363,14 @@ static bool ModBus_Send(struct MODBUS_BUF *lp,u8 slave,u8 key,u8 len,u8 *data)
 	u8 index;
 	if (!lp->active) {
 		if (len <= BUF_MAX_LEN - MODBUS_APPEND_LEN) {
-			lp->len = len + MODBUS_APPEND_LEN;
 			lp->buf[0] = slave;
 			lp->buf[1] = key;
 			lp->buf[2] = len;
 			for (index=3;index<len+3;index++) {
 				lp->buf[index] = *data++;
 			}
-			lp->buf[index] = 0;
-			lp->buf[index+1] = 0;
+			buf_calc_crc(lp->buf,len+3);
+			lp->len = len + MODBUS_APPEND_LEN;
 			return true;
 		}
 	}

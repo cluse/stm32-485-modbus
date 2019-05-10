@@ -435,6 +435,11 @@
               <FileType>1</FileType>
               <FilePath>.\Hardware\key\key.c</FilePath>
             </File>
+            <File>
+              <FileName>modbus_crc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Hardware\RS485\modbus_crc.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
