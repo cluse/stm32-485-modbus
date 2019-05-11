@@ -23,6 +23,8 @@ static u16 slave_idle_ms;
 #define MASTER_IDLE_RESET (master_idle_ms = all_tick_ms)
 #define SLAVE_IDLE_RESET (slave_idle_ms = all_tick_ms)
 
+static bool flag_master_run = false;
+
 static void Master_Receive(struct MODBUS_BUF *lp);
 static void Slave_Receive(struct MODBUS_BUF *lp);
 
@@ -174,7 +176,6 @@ static void Modbus_BufInit(struct MODBUS_BUF *lp)
 static void Modbus_BufCopy(struct MODBUS_BUF *src,struct MODBUS_BUF *dst)
 {
 	u8 i;
-	dst->active = src->active;
 	dst->len = src->len;
 	for (i=0;i<src->len;i++) {
 		dst->buf[i] = src->buf[i];
@@ -243,8 +244,11 @@ static void Master_Idle_Detect(void)
 	if (all_tick_ms < master_idle_ms) {
 		master_idle_ms = 0;
 	}
-	if (all_tick_ms > master_idle_ms + MASTER_IDLE_TIME) {
-		Modbus_BufInit(&master_tx);
+	if (flag_master_run) {
+		if (all_tick_ms > master_idle_ms + MASTER_IDLE_TIME) {
+			Modbus_BufInit(&master_tx);
+			flag_master_run = false;
+		}
 	}
 }
 
@@ -272,6 +276,7 @@ static void Master_TxStart(void)
 		USART_ClearFlag(master_uart,USART_FLAG_TC);
 		USART_ITConfig(master_uart, USART_IT_TC, ENABLE);
 		USART_SendData(master_uart, master_tx.buf[0]);
+		flag_master_run = true;
 	}
 }
 
@@ -296,6 +301,7 @@ static void Master_IntEvent()
 			if (is_frame_vaild(&master_rx)) {
 				Master_Receive(&master_rx);
 				Modbus_BufInit(&master_tx);
+				flag_master_run = false;
 			}
 		}
 	} 
