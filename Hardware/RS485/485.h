@@ -3,9 +3,15 @@
 
 #include "stm32f10x.h"
 
+
+#define DEBUG_MODBUS
+
+
+//-------------------------------------------------
 #define bool	u8
 #define false 0
 #define true	1
+
 
 //-------------------------------------------------
 #define MODBUS_SPEED 9600

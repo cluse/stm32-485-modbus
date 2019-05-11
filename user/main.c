@@ -12,6 +12,17 @@
 #include "pbdata.h"
 #include "bsp.h"
 
+
+void print_modbus(u8 *head,u8 salve,u8 key,u8 len,u8 *data)
+{
+	u8 i;
+	printf("%s slave=%x key=%x len=%d data=",head,salve,key,len);
+	for (i=0;i<len;i++) {
+		printf("%x,",*data++);
+	}
+	printf("\n");
+}
+
 int main(void)
 {
 	u8 tx485buf1[] = {1,2,3,4,5};
@@ -38,8 +49,9 @@ int main(void)
 		{
 			//RS485_Send_Data(tx485buf1,sizeof(tx485buf1));//发送5个字节 			
 			//printf("tx485byf:%s\n",tx485buf1);
-			if (ModBus_MasterSend(MODBUS_SLAVE_ADD,0,5,tx485buf1)) {
-				printf("ModBus_MasterSend tx485buf1\n");
+			if (ModBus_MasterSend(MODBUS_SLAVE_ADD,0,sizeof(tx485buf1),tx485buf1)) {
+				//printf("ModBus_MasterSend tx485buf1\n");
+				print_modbus("master ->",MODBUS_SLAVE_ADD,0,sizeof(tx485buf1),tx485buf1);
 			}
 			else {
 				printf("err -> ModBus_MasterSend tx485buf1\n");
@@ -49,8 +61,9 @@ int main(void)
 		{
 			//RS485_Send_Data(tx485buf2,sizeof(tx485buf2));//发送5个字节 			
 			//printf("tx485byf:%s\n",tx485buf2);
-			if (ModBus_MasterSend(MODBUS_SLAVE_ADD,0,5,tx485buf2)) {
-				printf("ModBus_MasterSend tx485buf2\n");
+			if (ModBus_MasterSend(MODBUS_SLAVE_ADD,0,sizeof(tx485buf2),tx485buf2)) {
+				//printf("ModBus_MasterSend tx485buf2\n");
+				print_modbus("master ->",MODBUS_SLAVE_ADD,0,sizeof(tx485buf2),tx485buf2);
 			}
 			else {
 				printf("err -> ModBus_MasterSend tx485buf2\n");
@@ -58,14 +71,15 @@ int main(void)
 		}	
 
 		if (ModBus_MasterGet(&modbus_data)) {
-			printf("ModBus_MasterGet Success\n");
+			//printf("ModBus_MasterGet Success\n");
+			print_modbus("master <-",modbus_data.buf[0],modbus_data.buf[1],
+				modbus_data.buf[2],&modbus_data.buf[3]);
 		}
 
 		delay_us(1000);
 		ModBus_TimerEvent(1);
 	}
 }
-
 
 #ifdef  USE_FULL_ASSERT
 

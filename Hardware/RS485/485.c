@@ -137,22 +137,6 @@ static void Slave_Rx_State(void)
 
 
 //-------------------------------------------------
-static void buf_init(struct MODBUS_BUF *lp)
-{
-	lp->active = false;
-	lp->len = 0;
-}
-
-static void buf_copy(struct MODBUS_BUF *src,struct MODBUS_BUF *dst)
-{
-	u8 i;
-	dst->len = src->len;
-	for (i=0;i<src->len;i++) {
-
-		dst->buf[i] = src->buf[i];
-	}
-}
-
 static void buf_add(struct MODBUS_BUF *lp,u8 val)
 {
 	if (lp->len < BUF_MAX_LEN) {
@@ -176,12 +160,49 @@ static u8 get_len_from_buf(struct MODBUS_BUF *lp)
 	return lp->buf[2];
 }
 
-static void buf_calc_crc(u8 *buf,u8 len)
+static u8* get_data_from_buf(struct MODBUS_BUF *lp)
 {
+	return &(lp->buf[3]);
+}
+
+static void Modbus_BufInit(struct MODBUS_BUF *lp)
+{
+	lp->len = 0;
+	lp->active = false;
+}
+
+static void Modbus_BufCopy(struct MODBUS_BUF *src,struct MODBUS_BUF *dst)
+{
+	u8 i;
+	dst->active = src->active;
+	dst->len = src->len;
+	for (i=0;i<src->len;i++) {
+		dst->buf[i] = src->buf[i];
+	}
+}
+
+static bool Modbus_BufSet(struct MODBUS_BUF *lp,u8 slave,u8 key,u8 len,u8 *data)
+{
+	u8 index;
 	u16 crc;
-	crc = crc16tablefast(buf,len&0xff);
-	buf[len] = ((crc>>8)&0xff);
-	buf[len+1] = (crc&0xff);
+	if (len > BUF_MAX_LEN - MODBUS_APPEND_LEN) {
+		return false;
+	}
+	if (!lp->active) {
+		lp->active = true;
+		lp->len = len + MODBUS_APPEND_LEN;
+		lp->buf[0] = slave;
+		lp->buf[1] = key;
+		lp->buf[2] = len;
+		for (index=3;index<len+3;index++) {
+			lp->buf[index] = *data++;
+		}
+		crc = crc16tablefast(lp->buf,index);
+		lp->buf[index++] = ((crc>>8)&0xff);
+		lp->buf[index++] = (crc&0xff);
+		return true;
+	}
+	return false;
 }
 
 static bool is_buf_crc_right(struct MODBUS_BUF *lp)
@@ -223,7 +244,7 @@ static void Master_Idle_Detect(void)
 		master_idle_ms = 0;
 	}
 	if (all_tick_ms > master_idle_ms + MASTER_IDLE_TIME) {
-		master_tx.active = false;
+		Modbus_BufInit(&master_tx);
 	}
 }
 
@@ -233,8 +254,8 @@ static void Slave_Idle_Detect(void)
 		slave_idle_ms = 0;
 	}
 	if (all_tick_ms > slave_idle_ms + MASTER_IDLE_TIME) {
-		slave_rx.active = false;
-		slave_rx.len = 0;
+		Modbus_BufInit(&slave_tx);
+		Modbus_BufInit(&slave_rx);
 	}
 }
 
@@ -243,10 +264,10 @@ static void Slave_Idle_Detect(void)
 static u8 master_tx_index;
 static void Master_TxStart(void)
 {
-	if (master_tx.len > 0) {
-		Master_Tx_State();
+	if (master_tx.active) {
 		MASTER_IDLE_RESET;
-		master_tx.active = true;
+		Master_Tx_State();
+		delay(100);
 		master_tx_index = 1;
 		USART_ClearFlag(master_uart,USART_FLAG_TC);
 		USART_ITConfig(master_uart, USART_IT_TC, ENABLE);
@@ -256,7 +277,6 @@ static void Master_TxStart(void)
 
 static void Master_IntEvent()
 {
-
 	MASTER_IDLE_RESET;
 	if(USART_GetITStatus(master_uart, USART_IT_TC) != RESET) {
 		if (master_tx_index < master_tx.len) {
@@ -275,6 +295,7 @@ static void Master_IntEvent()
 			buf_add(&master_rx,tmp);
 			if (is_frame_vaild(&master_rx)) {
 				Master_Receive(&master_rx);
+				Modbus_BufInit(&master_tx);
 			}
 		}
 	} 
@@ -290,10 +311,10 @@ static void Master_Receive(struct MODBUS_BUF *lp)
 static u8 slave_tx_index;
 static void Slave_TxStart()
 {
-	if (slave_tx.len > 0) {
+	if (slave_tx.active) {
+		SLAVE_IDLE_RESET;
 		Slave_Tx_State();
 		delay(100);
-		slave_tx.active = true;
 		slave_tx_index = 1;
 		USART_ClearFlag(slave_uart,USART_FLAG_TC);
 		USART_ITConfig(slave_uart, USART_IT_TC, ENABLE);
@@ -312,7 +333,7 @@ static void Slave_IntEvent()
 			Slave_Rx_State();
 			USART_ITConfig(slave_uart, USART_IT_TC, DISABLE);
 			USART_ClearFlag(slave_uart,USART_FLAG_TC);
-			slave_tx.active = false;
+			Modbus_BufInit(&slave_tx);
 		}
 	}
 	else if(USART_GetITStatus(slave_uart, USART_IT_RXNE) != RESET) {
@@ -320,83 +341,69 @@ static void Slave_IntEvent()
 		buf_add(&slave_rx,tmp);
 		if (is_frame_vaild(&slave_rx)) {
 			Slave_Receive(&slave_rx);
-			slave_rx.active = false;
-			slave_rx.len = 0;
+			Modbus_BufInit(&slave_rx);
 		}
 	} 
 }
 
 static void Slave_Receive(struct MODBUS_BUF *lp)
 {
-
-	u8 address,key,len;
-	address = get_add_from_buf(lp);
+	u8 slave,key,len,*data;
+	slave = get_add_from_buf(lp);
 	key = get_key_from_buf(lp);
 	len = get_len_from_buf(lp);
-	if (address != MODBUS_SLAVE_ADD) {
+	data = get_data_from_buf(lp);
+	if (slave != MODBUS_SLAVE_ADD) {
 		return;
 	}
-	buf_copy(lp,&slave_tx);
-	Slave_TxStart();
+#ifdef DEBUG_MODBUS
+	Modbus_BufSet(&slave_tx,slave,key,len,data);
+#endif
+	if (slave_tx.active) {
+		Slave_TxStart();
+	}
 }
 
 
 //-------------------------------------------------
 void Modbus_Master_Init()
 {
-	buf_init(&master_tx);
-	buf_init(&master_rx);
+	Modbus_BufInit(&master_tx);
+	Modbus_BufInit(&master_rx);
 	Master_Init();
 	Master_Rx_State();
 }
 
 void Modbus_Slave_Init()
 {
-	buf_init(&slave_tx);
-	buf_init(&slave_rx);
+	Modbus_BufInit(&slave_tx);
+	Modbus_BufInit(&slave_rx);
 	Slave_Init();
 	Slave_Rx_State();
 }
 
-static bool ModBus_Send(struct MODBUS_BUF *lp,u8 slave,u8 key,u8 len,u8 *data)
-{
-	u8 index;
-	if (!lp->active) {
-		if (len <= BUF_MAX_LEN - MODBUS_APPEND_LEN) {
-			lp->buf[0] = slave;
-			lp->buf[1] = key;
-			lp->buf[2] = len;
-			for (index=3;index<len+3;index++) {
-				lp->buf[index] = *data++;
-			}
-			buf_calc_crc(lp->buf,len+3);
-			lp->len = len + MODBUS_APPEND_LEN;
-			return true;
-		}
-	}
-	return false;
-}
-
 bool ModBus_MasterSend(u8 slave,u8 key,u8 len,u8 *data)
 {
-	if (ModBus_Send(&master_tx,slave,key,len,data)) {
+	bool ret;
+	ret = Modbus_BufSet(&master_tx,slave,key,len,data);
+	if (ret) {
 		Master_TxStart();
-		return true;
 	}
-	return false;
+	return ret;
 }
 
 bool ModBus_SlaveSend(u8 slave,u8 key,u8 len,u8 *data)
 {
-	return ModBus_Send(&slave_tx,slave,key,len,data);
+	bool ret;
+	ret = Modbus_BufSet(&slave_tx,slave,key,len,data);
+	return ret;
 }
 
 bool ModBus_MasterGet(struct MODBUS_BUF *lp)
 {
 	if (master_rx.active) {
-		buf_copy(&master_rx,lp);
-		master_rx.len = 0;
-		master_rx.active = false;
+		Modbus_BufCopy(&master_rx,lp);
+		Modbus_BufInit(&master_rx);
 		return true;
 	}
 	return false;
@@ -411,8 +418,6 @@ void ModBus_TimerEvent(u8 tick_ms)
 	Master_Idle_Detect();
 	Slave_Idle_Detect();
 }
-
-
 
 
 //-------------------------------------------------
