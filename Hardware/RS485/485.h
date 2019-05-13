@@ -19,14 +19,6 @@
 
 #define MASTER_IDLE_TIME 10
 
-#define MODBUS_APPEND_LEN 5
-#define BUF_MAX_LEN 64
-struct MODBUS_BUF {
-	bool active;
-	u8 len;
-	u8 buf[BUF_MAX_LEN];	//slave,key,len,d0,d1,...,crc0,crc1
-};
-
 
 //-------------------------------------------------
 void Modbus_Master_Init(void);
@@ -35,7 +27,12 @@ void Modbus_Slave_Init(void);
 bool ModBus_MasterSend(u8 slave,u8 key,u8 len,u8 *data);
 bool ModBus_SlaveSend(u8 slave,u8 key,u8 len,u8 *data);
 
-bool ModBus_MasterGet(struct MODBUS_BUF *lp);
+bool is_ModBus_MasterReceive();
+u8 get_ModBus_MasterReceiveSlave();
+u8 get_ModBus_MasterReceiveKey();
+u8 get_ModBus_MasterReceiveLen();
+u8* get_ModBus_MasterReceiveData();
+void empty_ModBus_MasterReceive();
 
 void ModBus_TimerEvent(u8 tick_ms);
 

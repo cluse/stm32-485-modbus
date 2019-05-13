@@ -7,6 +7,16 @@
 
 
 //-------------------------------------------------
+#define MODBUS_APPEND_LEN 5
+
+#define BUF_MAX_LEN 64
+struct MODBUS_BUF {
+	bool active;
+	bool run;
+	u8 len;
+	u8 buf[BUF_MAX_LEN];	//slave,key,len,d0,d1,...,crc0,crc1
+};
+
 //static USART_TypeDef *master_uart;
 //static USART_TypeDef *slave_uart;
 #define master_uart USART3
@@ -22,8 +32,6 @@ static u16 master_idle_ms;
 static u16 slave_idle_ms;
 #define MASTER_IDLE_RESET (master_idle_ms = all_tick_ms)
 #define SLAVE_IDLE_RESET (slave_idle_ms = all_tick_ms)
-
-static bool flag_master_run = false;
 
 static void Master_Receive(struct MODBUS_BUF *lp);
 static void Slave_Receive(struct MODBUS_BUF *lp);
@@ -170,6 +178,7 @@ static u8* get_data_from_buf(struct MODBUS_BUF *lp)
 static void Modbus_BufInit(struct MODBUS_BUF *lp)
 {
 	lp->len = 0;
+	lp->run = false;
 	lp->active = false;
 }
 
@@ -241,13 +250,12 @@ static bool is_frame_vaild(struct MODBUS_BUF *lp)
 
 static void Master_Idle_Detect(void)
 {
-	if (all_tick_ms < master_idle_ms) {
-		master_idle_ms = 0;
-	}
-	if (flag_master_run) {
+	if (master_tx.run) {
+		if (all_tick_ms < master_idle_ms) {
+			master_idle_ms = 0;
+		}
 		if (all_tick_ms > master_idle_ms + MASTER_IDLE_TIME) {
 			Modbus_BufInit(&master_tx);
-			flag_master_run = false;
 		}
 	}
 }
@@ -258,7 +266,9 @@ static void Slave_Idle_Detect(void)
 		slave_idle_ms = 0;
 	}
 	if (all_tick_ms > slave_idle_ms + MASTER_IDLE_TIME) {
-		Modbus_BufInit(&slave_tx);
+		if (slave_tx.run) {
+			Modbus_BufInit(&slave_tx);
+		}
 		Modbus_BufInit(&slave_rx);
 	}
 }
@@ -276,7 +286,7 @@ static void Master_TxStart(void)
 		USART_ClearFlag(master_uart,USART_FLAG_TC);
 		USART_ITConfig(master_uart, USART_IT_TC, ENABLE);
 		USART_SendData(master_uart, master_tx.buf[0]);
-		flag_master_run = true;
+		master_tx.run = true;
 	}
 }
 
@@ -301,7 +311,6 @@ static void Master_IntEvent()
 			if (is_frame_vaild(&master_rx)) {
 				Master_Receive(&master_rx);
 				Modbus_BufInit(&master_tx);
-				flag_master_run = false;
 			}
 		}
 	} 
@@ -325,6 +334,7 @@ static void Slave_TxStart()
 		USART_ClearFlag(slave_uart,USART_FLAG_TC);
 		USART_ITConfig(slave_uart, USART_IT_TC, ENABLE);
 		USART_SendData(slave_uart, slave_tx.buf[0]);
+		slave_tx.run = true;
 	}
 }
 
@@ -405,14 +415,34 @@ bool ModBus_SlaveSend(u8 slave,u8 key,u8 len,u8 *data)
 	return ret;
 }
 
-bool ModBus_MasterGet(struct MODBUS_BUF *lp)
+bool is_ModBus_MasterReceive()
 {
-	if (master_rx.active) {
-		Modbus_BufCopy(&master_rx,lp);
-		Modbus_BufInit(&master_rx);
-		return true;
-	}
-	return false;
+	return master_rx.active;
+}
+
+u8 get_ModBus_MasterReceiveSlave()
+{
+	return get_add_from_buf(&master_rx);
+}
+
+u8 get_ModBus_MasterReceiveKey()
+{
+	return get_key_from_buf(&master_rx);
+}
+
+u8 get_ModBus_MasterReceiveLen()
+{
+	return get_len_from_buf(&master_rx);
+}
+
+u8* get_ModBus_MasterReceiveData()
+{
+	return get_data_from_buf(&master_rx);
+}
+
+void empty_ModBus_MasterReceive()
+{
+	Modbus_BufInit(&master_rx);
 }
 
 void ModBus_TimerEvent(u8 tick_ms)

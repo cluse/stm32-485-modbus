@@ -28,7 +28,6 @@ int main(void)
 	u8 tx485buf1[] = {1,2,3,4,5};
 	u8 tx485buf2[] = {6,7,8,9,0};
 	u8 key;
-	struct MODBUS_BUF modbus_data;
 	
 	bsp_init(); //系统硬件初始化程序  
 
@@ -70,16 +69,21 @@ int main(void)
 			}		
 		}	
 
-		if (ModBus_MasterGet(&modbus_data)) {
+		if (is_ModBus_MasterReceive()) {
 			//printf("ModBus_MasterGet Success\n");
-			print_modbus("master <-",modbus_data.buf[0],modbus_data.buf[1],
-				modbus_data.buf[2],&modbus_data.buf[3]);
+			print_modbus("master <-",
+				get_ModBus_MasterReceiveSlave(),
+				get_ModBus_MasterReceiveKey(),
+				get_ModBus_MasterReceiveLen(),
+				get_ModBus_MasterReceiveData());
+			empty_ModBus_MasterReceive();
 		}
 
 		delay_us(1000);
 		ModBus_TimerEvent(1);
 	}
 }
+
 
 #ifdef  USE_FULL_ASSERT
 
